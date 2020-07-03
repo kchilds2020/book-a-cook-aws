@@ -1,0 +1,53 @@
+{
+  "name": "book-a-cook",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "bcrypt": "^4.0.1",
+    "body-parser": "^1.19.0",
+    "concurrently": "^5.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.1.7-alpha.3",
+    "express-session": "^1.17.1",
+    "formidable": "^1.2.2",
+    "gridfs-stream": "^1.1.1",
+    "jwt-decode": "^2.2.0",
+    "memorystore": "^1.6.2",
+    "method-override": "^3.0.0",
+    "mongodb": "^3.5.8",
+    "mongoose": "^5.9.16",
+    "multer": "^1.4.2",
+    "multer-gridfs-storage": "^4.1.0",
+    "nodemon": "^2.0.4",
+    "stripe": "^8.64.0"
+  },
+  "scripts": {
+    "prod": "node server.js",
+    "start": "node server.js",
+    "build": "cd client&&npm install&&npm run build&&cd ..",
+    "dev": "concurrently \"nodemon server.js\" \"cd client&&npm start\""
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "css-loader": "^3.5.3"
+  },
+  "engines": {
+    "node": "12.16.2"
+  }
+}
