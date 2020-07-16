@@ -4,6 +4,8 @@ const path = require('path');
 const cors = require('cors');
 const gets = require('./apis/gets');
 const posts = require('./apis/posts');
+const emailConfirmation = require('./apis/emailConfirmation');
+const completeOrder = require('./apis/completeOrder');
 const routes = require('./routes/routing')
 const mongoose =require('mongoose');
 const PORT = process.env.PORT || 5000;
@@ -41,6 +43,8 @@ mongoose.connect(process.env.MONGO_DB_URI, {
   });
 app.use(gets);
 app.use(posts);
+app.use(emailConfirmation)
+app.use(completeOrder)
 app.use(routes);
 
 
