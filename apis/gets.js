@@ -19,6 +19,7 @@ router.get('/api/get/image/:filename', (req,res) => {
 
 //find posts that you create
 router.get('/api/get/my-jobs/:username', (req,res) => {
+    let today = new Date()
     JobPost.find({username: req.params.username})
     .then(posts => {
         console.log(posts);
@@ -38,18 +39,30 @@ router.get('/api/get/menu-items/:username', (req,res) => {
 })
 
 //find orders that you need to be completed
-router.get('/api/get/active-orders/:username', (req,res) => {
-    Orders.find({chefUsername: req.params.username, completed: false})
-    .then(orders => {
-        console.log(orders);
-        res.json(orders)
+router.get('/api/get/active-orders/:username', async (req,res) => {
+    let orderItems = await Orders.find({chefUsername: req.params.username, pending: true})
+
+    orderItems.map( async(element) => {
+        console.log(element.deliveredDate - element.createdDate)
+        if(((Date.now() - element.deliveredDate) > 3600000) && element.completed === true){
+            let updateItem = await Orders.updateOne({_id: element._id},{
+                $set:{
+                    pending: false,
+                }
+            })
+        }
     })
-    .catch(err => console.log(err))
+    
+   /*  let filteredItems = orderItems.filter(element =>  (element.deliveredDate - element.createdDate) < 3600000) */
+
+    res.json(orderItems)
+
+    
 })
 
 //find status of orders that you have purchased
 router.get('/api/get/customer-orders/:username', (req,res) => {
-    Orders.find({customerUsername: req.params.username, completed: false})
+    Orders.find({customerUsername: req.params.username})
     .then(orders => {
         console.log(orders);
         res.json(orders)
@@ -59,7 +72,7 @@ router.get('/api/get/customer-orders/:username', (req,res) => {
 
 //find posts that you created
 router.get('/api/get/working-events/:username', (req,res) => {
-    JobPost.find({cook: req.params.username})
+    JobPost.find({cook: req.params.username, "date" : { $gte : new Date()}})
     .then(posts => {
         console.log(posts);
         res.json(posts)
@@ -146,16 +159,56 @@ router.get('/logout', (req,res) => {
 
 router.get('/secret/item/:id/:qty', async (req, res) => {
     const item = await Menu.findOne({_id: req.params.id})
+    const chef = await User.findOne({username: item.username})
     console.log('ITEM RESPONSE', item.price)
+    const amount = item.price * 100 * req.params.qty
+    const fee = amount * .1
     const intent = await stripe.paymentIntents.create({
-        amount: ((item.price * 100) + 500 + ((item.price * 100) * .08)) * req.params.qty,
+        amount: amount,
         currency: 'usd',
         // Verify your integration in this guide by including this parameter
         metadata: {integration_check: 'accept_a_payment'},
+        application_fee_amount: fee,
+        transfer_data: {
+            destination: chef.stripe_account_id,
+        },
     });
     console.log(intent.client_secret)
     res.json({client_secret: intent.client_secret});
   });
+
+  router.get('/secret/book-chef/:id/book/:chef', async (req, res) => {
+    const item = await JobPost.findOne({_id: req.params.id})
+    const chef = await User.findOne({username: req.params.chef})
+    console.log('ITEM RESPONSE', item, 'CHEF RESPONSE', chef)
+    const amount = item.price * 100 * item.peopleAmount
+    const fee = amount * .1
+    const intent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        // Verify your integration in this guide by including this parameter
+        metadata: {integration_check: 'accept_a_payment'},
+        application_fee_amount: fee,
+        transfer_data: {
+            destination: chef.stripe_account_id,
+        },
+    });
+    console.log(intent.client_secret)
+    res.json({client_secret: intent.client_secret});
+  });
+
+
+  router.get('/api/get/account-balance/:id', async (req, res) => {
+    const user = await User.findOne({_id: req.params.id})
+    
+    const balance = await stripe.balance.retrieve({
+        stripe_account: `${user.stripe_account_id}`
+      });
+
+    console.log(balance)
+    res.json(balance);
+  });
+  
 
 
 

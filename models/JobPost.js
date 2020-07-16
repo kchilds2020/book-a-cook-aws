@@ -9,6 +9,7 @@ const JobPost = new mongoose.Schema({
     username: {type: String, trim: true, default: ''},
     applications: {type: Array, default: []},
     cook: {type: String, trim: true, default: 'pending'},
+    price: {type: Number, default: 0}
 },
 {
     collection: 'job-posts'
